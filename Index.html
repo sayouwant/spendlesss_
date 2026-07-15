@@ -1,0 +1,3167 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spendlesss_ — Kelola Keuangan Sederhana</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ======================================================================
+         DAFTAR ISI CSS (urutannya mengikuti alur layar: Welcome → Menu/Home →
+         Pengaturan → Alokasi → Wishlist → Catatan → Game → Responsive)
+         1. Variabel & Tema (warna, mode terang/gelap, aksen)
+         2. Reset & Tipografi dasar
+         3. Dekorasi latar (blob)
+         4. Sistem layar (screen switcher)
+         5. Tombol umum (dipakai di semua layar)
+         6. Form field umum (dipakai di semua layar berisi input)
+         7. Layar: Memuat (loading)
+         8. Layar: Mulai Simulasi (welcome / pengganti login)
+         9. Header & navigasi atas (dipakai di semua layar setelah welcome)
+         10. Kontainer utama halaman (app-main)
+         11. Layar: Menu Utama / Home (termasuk quote slider sindiran)
+         12. Komponen bersama tiap fitur (feature-head, panel, dsb)
+         13. Layar: Pengaturan
+         14. Layar: Alokasi Gaji
+         15. Layar: Wishlist Tracker
+         16. Layar: Catatan Kas
+         17. Layar: Game "Lawan Sindiran"
+         18. Responsive (tablet & mobile)
+         ====================================================================== */
+
+      /* ----------------------------------------------------------------------
+         1. VARIABEL & TEMA
+         ---------------------------------------------------------------------- */
+      :root {
+        --radius-lg: 26px;
+        --radius-md: 16px;
+        --radius-sm: 10px;
+        --shadow: 0 10px 30px -12px rgba(31, 20, 10, 0.14);
+        --shadow-sm: 0 4px 14px -6px rgba(31, 20, 10, 0.12);
+      }
+
+      /* Mode terang (dipakai bersama warna aksen apa pun) */
+      [data-mode="light"] {
+        --bg: #f7faf8;
+        --bg-alt: #ffffff;
+        --bg-soft: #eef4f0;
+        --text: #17211b;
+        --text-muted: #63705f;
+        --border: #dfe8e2;
+        --track: #e6ede8;
+        --accent-2: #f0507a;
+        --accent-2-soft: #fce3ea;
+        --accent-3: #8a5cf6;
+        --accent-3-soft: #ede4fe;
+        --accent-4: #1fa97e;
+        --accent-4-soft: #dff4eb;
+      }
+      /* Mode gelap (dipakai bersama warna aksen apa pun) */
+      [data-mode="dark"] {
+        --bg: #14161a;
+        --bg-alt: #1c1f25;
+        --bg-soft: #21252c;
+        --text: #f2f3f1;
+        --text-muted: #9aa39c;
+        --border: #2b2f36;
+        --track: #2a2e34;
+        --accent-2: #ff7a9c;
+        --accent-2-soft: #34212b;
+        --accent-3: #b79cff;
+        --accent-3-soft: #26223c;
+        --accent-4: #4fdba6;
+        --accent-4-soft: #1c302a;
+      }
+
+      /* Warna aksen: Hijau (bawaan/default) */
+      [data-mode="light"][data-accent="hijau"] {
+        --accent: #12a583;
+        --accent-ink: #ffffff;
+        --accent-soft: #d6f2e6;
+      }
+      [data-mode="dark"][data-accent="hijau"] {
+        --accent: #35d1a0;
+        --accent-ink: #0d1a15;
+        --accent-soft: #16322a;
+      }
+      /* Warna aksen: Sweet Pink */
+      [data-mode="light"][data-accent="pink"] {
+        --accent: #ff5fa2;
+        --accent-ink: #ffffff;
+        --accent-soft: #ffd6ea;
+      }
+      [data-mode="dark"][data-accent="pink"] {
+        --accent: #ff85b8;
+        --accent-ink: #23121b;
+        --accent-soft: #3a2230;
+      }
+      /* Warna aksen: Ungu */
+      [data-mode="light"][data-accent="ungu"] {
+        --accent: #8a5cf6;
+        --accent-ink: #ffffff;
+        --accent-soft: #ede4fe;
+      }
+      [data-mode="dark"][data-accent="ungu"] {
+        --accent: #b79cff;
+        --accent-ink: #1a1430;
+        --accent-soft: #2a2340;
+      }
+      /* Warna aksen: Biru */
+      [data-mode="light"][data-accent="biru"] {
+        --accent: #2e9be0;
+        --accent-ink: #ffffff;
+        --accent-soft: #def0fb;
+      }
+      [data-mode="dark"][data-accent="biru"] {
+        --accent: #5cb8f5;
+        --accent-ink: #0f2130;
+        --accent-soft: #1c2d3d;
+      }
+
+      /* ----------------------------------------------------------------------
+         2. RESET & TIPOGRAFI DASAR
+         ---------------------------------------------------------------------- */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background-color: var(--bg);
+        /* Dot-grid halus ala Linear/Notion — memberi tekstur tanpa ramai,
+           warnanya ikut mengikuti --text jadi otomatis pas di mode terang/gelap. */
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          color-mix(in srgb, var(--text) 15%, transparent) 1px,
+          transparent 0
+        );
+        background-size: 26px 26px;
+        background-attachment: fixed;
+        color: var(--text);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        transition:
+          background-color 0.4s ease,
+          color 0.4s ease;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        position: relative;
+      }
+      /* Lapisan noise tipis di atas dot-grid supaya latar terasa "bertekstur",
+         bukan flat polos. Sangat halus (opacity rendah) agar tetap minimalist. */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.5;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      /* Vinyet lembut di tepi layar agar dot-grid tidak terasa rata/statis */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          ellipse at 50% 0%,
+          transparent 0%,
+          transparent 45%,
+          color-mix(in srgb, var(--bg) 55%, transparent) 100%
+        );
+      }
+      h1,
+      h2,
+      h3,
+      .display {
+        font-family: "Baloo 2", sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      a {
+        color: inherit;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      input,
+      select {
+        font-family: inherit;
+      }
+      :focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+      .mono {
+        font-family: "Space Mono", monospace;
+      }
+
+      /* ----------------------------------------------------------------------
+         3. DEKORASI LATAR (gradient mesh lembut yang melayang pelan di belakang
+         dot-grid). Tiap blob pakai gradasi 2 warna, bukan warna flat, supaya
+         terasa lebih "modern mesh gradient" daripada lingkaran blur polos.
+         ---------------------------------------------------------------------- */
+      .blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(70px);
+        z-index: 0;
+        pointer-events: none;
+        animation: blobDrift 22s ease-in-out infinite alternate;
+      }
+      .blob.b2 {
+        animation-duration: 26s;
+        animation-delay: -6s;
+      }
+      .blob.b3 {
+        animation-duration: 30s;
+        animation-delay: -12s;
+      }
+      @keyframes blobDrift {
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+        to {
+          transform: translate(22px, -18px) scale(1.06);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .blob {
+          animation: none;
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         4. SISTEM LAYAR (screen switcher) — hanya 1 layar aktif di satu waktu
+         ---------------------------------------------------------------------- */
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
+        animation: fadeIn 0.4s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         5. TOMBOL UMUM (dipakai di seluruh halaman: primary/ghost/danger)
+         ---------------------------------------------------------------------- */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 13px 24px;
+        border-radius: 100px;
+        border: none;
+        font-weight: 700;
+        font-size: 14.5px;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          background 0.2s,
+          opacity 0.15s;
+        width: 100%;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+      .btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--accent-ink);
+        box-shadow: 0 8px 20px -8px
+          color-mix(in srgb, var(--accent) 70%, transparent);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text);
+        border: 1.5px solid var(--border);
+      }
+      .btn-danger {
+        background: transparent;
+        color: var(--accent-2);
+        border: 1.5px solid var(--accent-2-soft);
+      }
+      .btn-auto {
+        width: auto;
+      }
+      .btn-sm {
+        padding: 9px 16px;
+        font-size: 13.5px;
+      }
+
+      /* ----------------------------------------------------------------------
+         6. FORM FIELD UMUM (label + kotak isian, dipakai di semua layar)
+         ---------------------------------------------------------------------- */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 30px;
+      }
+      .field label {
+        font-size: 12px;
+        text-align: center;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .field input,
+      .field select {
+        padding: 13px 15px;
+        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14.5px;
+        font-weight: 600;
+        width: 100%;
+      }
+      .field input:focus,
+      .field select:focus {
+        border-color: var(--accent);
+      }
+
+      /* ----------------------------------------------------------------------
+         7. LAYAR: MEMUAT (LOADING)
+         ---------------------------------------------------------------------- */
+      .loading-note {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+
+      /* ----------------------------------------------------------------------
+         8. LAYAR: MULAI SIMULASI (welcome / pengganti login)
+         ---------------------------------------------------------------------- */
+      .auth-wrap {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 64px 20px 32px;
+      }
+      .auth-card {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 450px;
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 34px 34px 38px;
+        box-shadow: var(--shadow);
+      }
+      .auth-logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-family: "Baloo 2";
+        font-weight: 700;
+        font-size: 19px;
+        margin-bottom: 2px;
+        text-align: center;
+      }
+      .auth-logo .mark {
+        width: 90px;
+        height: 90px;
+        border-radius: 90px;
+        display: flex;
+        position: relative;
+        overflow: hidden;
+        left: -6px;
+        font-size: 18px;
+        margin-bottom: -30px;
+        flex: none;
+      }
+      .auth-eyebrow {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-bottom: 20px;
+      }
+      .auth-card h2 {
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 6px;
+      }
+      .auth-sub {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-bottom: 15px;
+      }
+      /* Petunjuk kecil di bawah input nama (khusus layar welcome) */
+      .field-hint {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-align: center;
+      }
+      .auth-switch {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 13.5px;
+        color: var(--text-muted);
+      }
+      .auth-switch button {
+        background: none;
+        border: none;
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 13.5px;
+        text-decoration: underline;
+        padding: 0;
+      }
+
+      /* ----------------------------------------------------------------------
+         9. HEADER & NAVIGASI ATAS (tombol Home / Game / Pengaturan)
+         dipakai di semua layar setelah welcome
+         ---------------------------------------------------------------------- */
+      .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        backdrop-filter: blur(10px);
+        background: color-mix(in srgb, var(--bg) 82%, transparent);
+        border-bottom: 1px solid var(--border);
+      }
+      .app-header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 14px 28px;
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-family: "Baloo 2";
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .logo .mark {
+        width: 80px;
+        height: 80px;
+        border-radius: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        font-size: 16px;
+        flex: none;
+      }
+      /* Logo otomatis ganti sesuai mode terang/gelap — dipakai di layar
+         Welcome (.auth-logo .mark) dan Header (.logo .mark). Cukup siapkan
+         2 file PNG: satu untuk mode terang, satu untuk mode gelap. */
+      .logo-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+      }
+      [data-mode="light"] .logo-img-light {
+        display: block;
+      }
+      [data-mode="dark"] .logo-img-dark {
+        display: block;
+      }
+      /* Tombol navigasi: Home / Game / Pengaturan (bentuk pill) */
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 4px;
+      }
+      .nav-link {
+        background: none;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 100px;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+      .nav-link.active {
+        background: var(--accent);
+        color: var(--accent-ink);
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      /* Chip nama + foto profil kecil di pojok kanan atas */
+      .user-chip {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 14px 6px 6px;
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        background: var(--bg-alt);
+      }
+      .user-chip .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 12.5px;
+        flex: none;
+        overflow: hidden;
+      }
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .user-chip span {
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .logout-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .logout-btn:hover {
+        color: var(--accent);
+      }
+
+      /* ----------------------------------------------------------------------
+         10. KONTENER UTAMA ISI HALAMAN (di bawah header)
+         ---------------------------------------------------------------------- */
+      .app-main {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 40px 28px 80px;
+        position: relative;
+        z-index: 1;
+      }
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 13.5px;
+        margin-bottom: 22px;
+      }
+      .back-link:hover {
+        color: var(--accent);
+      }
+
+      /* ----------------------------------------------------------------------
+         11. LAYAR: MENU UTAMA / HOME
+         ---------------------------------------------------------------------- */
+      .menu-head {
+        margin-bottom: 28px;
+      }
+      .menu-head h2 {
+        font-size: clamp(24px, 3.6vw, 32px);
+        margin-bottom: 8px;
+      }
+      .menu-head p {
+        color: var(--text-muted);
+        font-size: 15px;
+      }
+
+      /* ---- Kotak kutipan "struk" sindiran doom-spending, mengikuti tema aksen
+             yang dipilih user & mode terang/gelap. Isinya berganti tiap 10 detik
+             lewat JS (lihat startQuoteRotation). ---- */
+      .sindiran-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+        padding: 20px 24px;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        background: linear-gradient(
+          135deg,
+          var(--accent-soft),
+          color-mix(in srgb, var(--accent) 12%, var(--bg-alt))
+        );
+        border: 1.5px solid color-mix(in srgb, var(--accent) 30%, transparent);
+        box-shadow: var(--shadow-sm);
+      }
+      .sindiran-box::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at top right,
+          color-mix(in srgb, var(--accent) 22%, transparent),
+          transparent 60%
+        );
+        pointer-events: none;
+      }
+      .sindiran-icon {
+        position: relative;
+        z-index: 1;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex: none;
+        background: linear-gradient(
+          135deg,
+          var(--accent),
+          color-mix(in srgb, var(--accent) 55%, var(--bg-alt))
+        );
+        box-shadow: 0 8px 18px -8px
+          color-mix(in srgb, var(--accent) 60%, transparent);
+      }
+      .sindiran-content {
+        position: relative;
+        z-index: 1;
+        min-width: 0;
+      }
+      .sindiran-tag {
+        display: block;
+        font-family: "Space Mono", monospace;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        margin-bottom: 5px;
+      }
+      .sindiran-content p {
+        font-family: "Space Mono", monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        font-weight: 700;
+        color: var(--text);
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
+      }
+      .sindiran-content p.fade {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      /* ---- Grid kartu fitur: Alokasi Gaji / Wishlist / Catatan Kas / Game ---- */
+      .menu-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 22px;
+      }
+      .menu-card {
+        background: var(--bg-alt);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 32px 26px;
+        text-align: left;
+        box-shadow: var(--shadow-sm);
+        transition:
+          transform 0.18s ease,
+          border-color 0.18s ease;
+      }
+      .menu-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--accent);
+      }
+      .icon-badge {
+        width: 52px;
+        height: 52px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 18px;
+      }
+      .menu-card h3 {
+        font-size: 19px;
+        margin-bottom: 8px;
+      }
+      .menu-card p {
+        color: var(--text-muted);
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 18px;
+      }
+      .menu-card .arrow {
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 13.5px;
+      }
+
+      /* ----------------------------------------------------------------------
+         12. KOMPONEN BERSAMA TIAP FITUR
+         (dipakai di Pengaturan, Alokasi, Wishlist, Catatan, Game)
+         ---------------------------------------------------------------------- */
+      .feature-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 8px;
+      }
+      .feature-head .icon-badge {
+        margin-bottom: 0;
+      }
+      .feature-head h2 {
+        font-size: 26px;
+        color: var(--accent);
+      }
+      .feature-sub {
+        color: var(--text-muted);
+        font-size: 14.5px;
+        margin-bottom: 30px;
+      }
+      /* Kotak panel putih pembungkus form tiap fitur */
+      .panel {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 30px;
+        box-shadow: var(--shadow-sm);
+      }
+      .field-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        margin-bottom: 22px;
+      }
+      .field-row .field {
+        flex: 1;
+        min-width: 160px;
+        margin-bottom: 0;
+      }
+      .field-row .btn {
+        width: auto;
+      }
+      /* Tombol ikon kecil bulat (mis. tombol hapus "X"), dipakai di Wishlist & Catatan */
+      .icon-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border);
+        background: var(--bg-alt);
+        color: var(--text-muted);
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .icon-btn:hover {
+        color: var(--accent-2);
+        border-color: var(--accent-2);
+      }
+      /* Tampilan saat data masih kosong, dipakai di Wishlist & Catatan */
+      .empty-state {
+        text-align: center;
+        padding: 36px 20px;
+        color: var(--text-muted);
+        font-size: 14px;
+        border: 1.5px dashed var(--border);
+        border-radius: var(--radius-md);
+        margin-top: 18px;
+      }
+      /* Strip ringkasan angka, dipakai di Alokasi Gaji & Catatan Kas */
+      .summary-strip {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 22px;
+        padding: 18px 20px;
+        background: var(--bg-soft);
+        border-radius: var(--radius-md);
+      }
+      .summary-item .num {
+        font-family: "Baloo 2";
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+      .summary-item .lbl {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+      .summary-item.warn .num {
+        color: var(--accent-2);
+      }
+      .summary-item.ok .num {
+        color: var(--accent);
+      }
+
+      /* ----------------------------------------------------------------------
+         13. LAYAR: PENGATURAN (Tema, Nama Panggilan)
+         ---------------------------------------------------------------------- */
+      .settings-section {
+        margin-bottom: 26px;
+      }
+      .settings-section h3 {
+        font-size: 16.5px;
+        margin-bottom: 4px;
+      }
+      .settings-section .sec-sub {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+      }
+      /* Tombol pilihan tema (lingkaran warna) */
+      .theme-grid {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .theme-choice {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        background: none;
+        border: none;
+      }
+      .theme-swatch {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        border: 2.5px solid transparent;
+        transition: border-color 0.2s;
+      }
+      .theme-choice.active .theme-swatch {
+        border-color: var(--accent);
+      }
+      .theme-swatch[data-mode-swatch="light"] {
+        background: linear-gradient(135deg, #ffffff, #eef4f0);
+        border: 1.5px solid var(--border);
+      }
+      .theme-swatch[data-mode-swatch="dark"] {
+        background: linear-gradient(135deg, #14161a, #2b2f36);
+      }
+      .theme-swatch[data-accent-swatch="hijau"] {
+        background: linear-gradient(135deg, #12a583, #35d1a0);
+      }
+      .theme-swatch[data-accent-swatch="pink"] {
+        background: linear-gradient(135deg, #ff5fa2, #ff9fcf);
+      }
+      .theme-swatch[data-accent-swatch="ungu"] {
+        background: linear-gradient(135deg, #8a5cf6, #c3aaff);
+      }
+      .theme-swatch[data-accent-swatch="biru"] {
+        background: linear-gradient(135deg, #2e9be0, #7fc4f2);
+      }
+      .theme-choice span {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 26px 0;
+      }
+      /* Kotak pesan sukses (hijau), dipakai di Pengaturan (simpan nama) */
+      .form-ok {
+        font-size: 13px;
+        font-weight: 700;
+        padding: 10px 14px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        display: none;
+        background: var(--accent-4-soft);
+        color: var(--accent-4);
+      }
+      .form-ok.show {
+        display: block;
+      }
+      /* Kotak info sisa kesempatan ganti nama (netral, warna aksen ungu) */
+      .form-info {
+        font-size: 13px;
+        font-weight: 700;
+        padding: 10px 14px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        display: none;
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .form-info.show {
+        display: block;
+      }
+      .save-status {
+        font-size: 12.5px;
+        color: var(--accent-4);
+        font-weight: 700;
+        min-height: 16px;
+        margin-top: 6px;
+      }
+
+      /* ----------------------------------------------------------------------
+         14. LAYAR: ALOKASI GAJI — kartu tiap pos & progress bar
+         ---------------------------------------------------------------------- */
+      .pos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+        margin-top: 6px;
+      }
+      .pos-card {
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        background: var(--bg);
+      }
+      .pos-card .pos-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .pos-card .pos-name {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .pos-card .pos-pct {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 700;
+      }
+      .pos-card input {
+        width: 100%;
+        padding: 9px 10px;
+        border-radius: 9px;
+        border: 1.5px solid var(--border);
+        background: var(--bg-alt);
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text);
+      }
+      .bar-track {
+        height: 8px;
+        background: var(--track);
+        border-radius: 6px;
+        margin-top: 10px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 6px;
+        transition: width 0.3s ease;
+      }
+      /* Kotak kecil berisi rumus (50-30-20) */
+      .formula-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        border: 1.5px solid var(--border);
+        border-radius: 100px;
+        font-weight: 700;
+        font-size: 13.5px;
+        margin-top: 20px;
+        background: var(--bg);
+      }
+      .formula-box .frac {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 12px;
+        line-height: 1.3;
+      }
+      .formula-box .frac .line {
+        width: 100%;
+        border-top: 1.5px solid var(--text);
+        margin: 2px 0;
+      }
+
+      /* ----------------------------------------------------------------------
+         15. LAYAR: WISHLIST TRACKER
+         ---------------------------------------------------------------------- */
+      .wish-list {
+        display: grid;
+        gap: 14px;
+        margin-top: 22px;
+      }
+      .wish-card {
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 18px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        background: var(--bg);
+      }
+      .wish-card .wname {
+        font-weight: 700;
+        font-size: 15.5px;
+      }
+      .wish-card .wmeta {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .wish-duration {
+        text-align: center;
+        background: var(--accent-2-soft);
+        color: var(--accent-2);
+        border-radius: 14px;
+        padding: 10px 16px;
+        min-width: 100px;
+      }
+      .wish-duration .d-num {
+        font-family: "Baloo 2";
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .wish-duration .d-lbl {
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+
+      /* ----------------------------------------------------------------------
+         16. LAYAR: CATATAN KAS
+         ---------------------------------------------------------------------- */
+      .cash-list {
+        margin-top: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .cash-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 16px;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        background: var(--bg);
+        flex-wrap: wrap;
+      }
+      .cash-row .ci-name {
+        font-weight: 700;
+        font-size: 14.5px;
+      }
+      .cash-row .ci-meta {
+        font-size: 12.5px;
+        color: var(--text-muted);
+      }
+      .cash-row .ci-amt {
+        font-family: "Baloo 2";
+        font-weight: 700;
+        color: var(--accent-2);
+        font-size: 15px;
+      }
+
+      /* ----------------------------------------------------------------------
+         17. LAYAR: GAME "LAWAN SINDIRAN" (kuis pilihan ganda doom-spending)
+         ---------------------------------------------------------------------- */
+      .game-stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+        padding: 16px 20px;
+        background: var(--bg-soft);
+        border-radius: var(--radius-md);
+      }
+      .game-stat .num {
+        font-family: "Baloo 2";
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .game-stat .lbl {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+      .game-prompt {
+        background: var(--bg);
+        border: 1.5px dashed var(--accent-2);
+        border-radius: var(--radius-md);
+        padding: 22px;
+        margin-bottom: 22px;
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+      }
+      .game-prompt .gp-badge {
+        font-family: "Space Mono", monospace;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 4px 9px;
+        border-radius: 6px;
+        background: var(--accent-2-soft);
+        color: var(--accent-2);
+        flex: none;
+        margin-top: 2px;
+      }
+      .game-prompt p {
+        font-family: "Space Mono", monospace;
+        font-size: 15px;
+        line-height: 1.6;
+        font-weight: 700;
+      }
+      .game-question {
+        font-size: 14.5px;
+        color: var(--text-muted);
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+      .game-options {
+        display: grid;
+        gap: 12px;
+      }
+      .game-option {
+        text-align: left;
+        width: 100%;
+        padding: 15px 18px;
+        border-radius: var(--radius-md);
+        border: 1.5px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.5;
+        transition:
+          border-color 0.15s,
+          background 0.15s,
+          transform 0.1s;
+      }
+      .game-option:hover:not(:disabled) {
+        border-color: var(--accent);
+        transform: translateY(-1px);
+      }
+      .game-option:disabled {
+        cursor: default;
+      }
+      .game-option.correct {
+        border-color: var(--accent-4);
+        background: var(--accent-4-soft);
+        color: var(--accent-4);
+      }
+      .game-option.wrong {
+        border-color: var(--accent-2);
+        background: var(--accent-2-soft);
+        color: var(--accent-2);
+      }
+      .game-feedback {
+        margin-top: 18px;
+        padding: 16px 18px;
+        border-radius: var(--radius-md);
+        font-size: 13.5px;
+        line-height: 1.6;
+        font-weight: 600;
+        display: none;
+      }
+      .game-feedback.show {
+        display: block;
+      }
+      .game-feedback.correct {
+        background: var(--accent-4-soft);
+        color: var(--accent-4);
+      }
+      .game-feedback.wrong {
+        background: var(--accent-2-soft);
+        color: var(--accent-2);
+      }
+      .game-next-wrap {
+        margin-top: 18px;
+        display: none;
+      }
+      .game-next-wrap.show {
+        display: block;
+      }
+      /* Pilih level (Easy/Medium/Hard) */
+      .level-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+      }
+      .level-card {
+        background: var(--bg-alt);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 26px 24px;
+        text-align: left;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        transition:
+          transform 0.18s ease,
+          border-color 0.18s ease;
+      }
+      .level-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--accent);
+      }
+      .level-tag {
+        font-family: "Space Mono", monospace;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 4px 10px;
+        border-radius: 100px;
+        margin-bottom: 6px;
+      }
+      .level-tag.easy {
+        background: var(--accent-4-soft);
+        color: var(--accent-4);
+      }
+      .level-tag.medium {
+        background: var(--accent-3-soft);
+        color: var(--accent-3);
+      }
+      .level-tag.hard {
+        background: var(--accent-2-soft);
+        color: var(--accent-2);
+      }
+      .level-card h3 {
+        font-size: 18px;
+      }
+      .level-card p {
+        color: var(--text-muted);
+        font-size: 13.5px;
+        line-height: 1.6;
+      }
+      .level-stat {
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+      /* Baris progres kuis (badge level + Soal x/10) */
+      .game-progress-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .game-progress-text {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+      /* Panel hasil akhir 10 soal */
+      .game-result-panel {
+        text-align: center;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .game-result-emoji {
+        font-size: 46px;
+        margin-bottom: 6px;
+      }
+      .game-result-panel h3 {
+        font-size: 23px;
+        margin-bottom: 10px;
+      }
+      .game-result-panel p {
+        color: var(--text-muted);
+        font-size: 14.5px;
+        line-height: 1.7;
+        margin-bottom: 6px;
+      }
+      .game-result-panel .summary-strip {
+        justify-content: center;
+      }
+      .game-result-panel .profil-actions {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      /* ----------------------------------------------------------------------
+         18. RESPONSIVE — Tablet & Mobile
+         ---------------------------------------------------------------------- */
+      @media (max-width: 860px) {
+        .nav-links {
+          order: 3;
+          width: 100%;
+          justify-content: center;
+        }
+      }
+      @media (max-width: 560px) {
+        .auth-wrap {
+          padding-top: 40px;
+        }
+        .auth-card {
+          padding: 26px 22px 30px;
+        }
+        .field-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .field-row .btn {
+          width: 100%;
+        }
+        .sindiran-box {
+          padding: 16px 18px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-mode="light" data-accent="hijau">
+    <div
+      class="blob"
+      style="
+        width: 460px;
+        height: 460px;
+        background: radial-gradient(
+          circle at 30% 30%,
+          var(--accent-soft),
+          transparent 70%
+        );
+        top: -160px;
+        right: -140px;
+        opacity: 0.75;
+      "
+    ></div>
+    <div
+      class="blob b2"
+      style="
+        width: 380px;
+        height: 380px;
+        background: radial-gradient(
+          circle at 60% 40%,
+          var(--accent-4-soft),
+          transparent 70%
+        );
+        bottom: -120px;
+        left: -160px;
+        opacity: 0.75;
+      "
+    ></div>
+    <div
+      class="blob b3"
+      style="
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(
+          circle at 50% 50%,
+          var(--accent-3-soft),
+          transparent 70%
+        );
+        top: 38%;
+        left: 50%;
+        opacity: 0.4;
+      "
+    ></div>
+
+    <!-- ============================================================
+         LAYAR 1: MEMUAT (LOADING)
+         ============================================================ -->
+    <section class="screen" id="screen-loading">
+      <div class="loading-note">Memuat Spendlesss_…</div>
+    </section>
+
+    <!-- ============================================================
+         LAYAR 2: MULAI SIMULASI (pengganti login)
+         ============================================================ -->
+    <section class="screen" id="screen-welcome">
+      <div class="auth-wrap">
+        <div class="auth-card">
+          <div class="auth-logo">
+            <span class="mark">
+              <img
+                src="doom1.png"
+                alt="Logo Spendlesss_"
+                class="logo-img logo-img-light"
+              />
+              <img
+                src="doom2.png"
+                alt="Logo Spendlesss_"
+                class="logo-img logo-img-dark"
+              />
+            </span>
+            Spendlesss_
+          </div>
+          <div class="auth-eyebrow">Simulasi Kelola Keuangan</div>
+          <h2>Yuk, Mulai Simulasi!</h2>
+          <p class="auth-sub">
+            Nggak perlu daftar ini cuma simulasi buat latihan mengelola keuangan
+            mu.
+          </p>
+          <div class="field">
+            <label for="wcName"></label>
+            <input type="text" id="wcName" placeholder="Nama" maxlength="24" />
+          </div>
+          <button class="btn btn-primary" id="startBtn">Masuk →</button>
+          <div class="auth-switch" id="continueWrap" style="display: none">
+            Sudah pernah main?
+            <button id="continueBtn">Lanjutkan simulasi lama</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         LAYAR 3: MENU UTAMA / HOME
+         ============================================================ -->
+    <section class="screen" id="screen-menu">
+      <!-- Header + navigasi (Home/Game/Pengaturan) diisi otomatis oleh JS: lihat fungsi headerHTML() -->
+      <header class="app-header" data-header></header>
+      <div class="app-main">
+        <div class="menu-head">
+          <h2 id="menuGreet">Halo, Sahabat Spendlesss_</h2>
+          <p>Pilih salah satu fitur untuk mulai mengelola keuanganmu.</p>
+        </div>
+
+        <!-- Kotak kutipan sindiran doom-spending, isinya berganti tiap 10 detik lewat JS -->
+        <div class="sindiran-box" id="homeQuote">
+          <div class="sindiran-icon">🤑</div>
+          <div class="sindiran-content">
+            <span class="sindiran-tag">kata-kata hari ini..</span>
+            <p id="sindiranText"></p>
+          </div>
+        </div>
+
+        <div class="menu-grid">
+          <button class="menu-card" data-go="alokasi">
+            <div
+              class="icon-badge"
+              style="background: var(--accent-soft); color: var(--accent)"
+            >
+              💸
+            </div>
+            <h3 style="color: var(--accent)">Alokasi keuangan</h3>
+            <p>
+              Simulasikan pembagian gaji atau uang saku pada tabungan,
+              kebutuhan, dana darurat, nongkrong, hingga wishlist.
+            </p>
+            <span class="arrow">Buka fitur →</span>
+          </button>
+          <button class="menu-card" data-go="wishlist">
+            <div
+              class="icon-badge"
+              style="background: var(--accent-soft); color: var(--accent)"
+            >
+              📝
+            </div>
+            <h3 style="color: var(--accent)">Wishlist Tracker</h3>
+            <p>
+              Ubah rencana impian menjadi kalkulasi,hari menabung otomatis
+              lengkap dengan estimasi target.
+            </p>
+            <span class="arrow">Buka fitur →</span>
+          </button>
+          <button class="menu-card" data-go="catatan">
+            <div
+              class="icon-badge"
+              style="background: var(--accent-soft); color: var(--accent)"
+            >
+              ✅
+            </div>
+            <h3 style="color: var(--accent)">Catatan Kas</h3>
+            <p>Rekap pengeluaran harian secara instan dan tidak rumit.</p>
+            <span class="arrow">Buka fitur →</span>
+          </button>
+          <button class="menu-card" data-go="game">
+            <div
+              class="icon-badge"
+              style="background: var(--accent-soft); color: var(--accent)"
+            >
+              🎮
+            </div>
+            <h3 style="color: var(--accent)">Mini Games</h3>
+            <p>Ayo main!! mungkin setelah main kamu akan sadar.</p>
+            <span class="arrow">Main sekarang →</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         LAYAR 4: PENGATURAN (tema, nama panggilan)
+         ============================================================ -->
+    <section class="screen" id="screen-pengaturan">
+      <!-- Header + navigasi (Home/Game/Pengaturan) diisi otomatis oleh JS: lihat fungsi headerHTML() -->
+      <header class="app-header" data-header></header>
+      <div class="app-main" style="max-width: 640px">
+        <button class="back-link" data-nav="menu">← Kembali ke Home</button>
+        <div class="feature-head">
+          <div
+            class="icon-badge"
+            style="background: var(--accent-3-soft); color: var(--accent-3)"
+          >
+            ⚙️
+          </div>
+          <h2>Pengaturan</h2>
+        </div>
+        <p class="feature-sub">Atur tampilan dan keamanan akunmu di sini.</p>
+
+        <div class="panel">
+          <div class="settings-section">
+            <h3>Mode Tampilan</h3>
+            <p class="sec-sub">Pilih mode terang atau gelap.</p>
+            <div class="theme-grid" id="modeGrid"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="settings-section">
+            <h3>Warna Aksen</h3>
+            <p class="sec-sub">Pilih warna aksen favoritmu.</p>
+            <div class="theme-grid" id="accentGrid"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="settings-section">
+            <h3>Nama Panggilan</h3>
+            <p class="sec-sub">Nama ini dipakai di sapaan dan header atas.</p>
+            <div class="form-ok" id="nameOk"></div>
+            <div class="form-info" id="nameInfo"></div>
+            <div class="field">
+              <label for="nickInput">Nama Panggilan</label>
+              <input
+                type="text"
+                id="nickInput"
+                placeholder="cth. Sayma"
+                maxlength="24"
+              />
+            </div>
+            <button class="btn btn-ghost btn-auto" id="saveNickBtn">
+              Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         LAYAR 5: FITUR ALOKASI GAJI
+         ============================================================ -->
+    <section class="screen" id="screen-alokasi">
+      <!-- Header + navigasi (Home/Game/Pengaturan) diisi otomatis oleh JS: lihat fungsi headerHTML() -->
+      <header class="app-header" data-header></header>
+      <div class="app-main">
+        <button class="back-link" data-nav="menu">← Kembali ke Home</button>
+        <div class="feature-head">
+          <div
+            class="icon-badge"
+            style="background: var(--accent-soft); color: var(--accent)"
+          >
+            💸
+          </div>
+          <h2>Alokasi Gaji</h2>
+        </div>
+        <p class="feature-sub">
+          Masukkan gaji bulananmu, lalu bagi ke berbagai pos secara manual atau
+          otomatis.
+        </p>
+
+        <div class="panel">
+          <div class="field-row">
+            <div class="field">
+              <label for="gajiInput">Gaji Bulanan (Rp)</label>
+              <input
+                type="number"
+                id="gajiInput"
+                placeholder="cth. 5000000"
+                min="0"
+              />
+            </div>
+            <button class="btn btn-primary" id="simulasiBtn">
+              Simulasikan
+            </button>
+          </div>
+          <div class="pos-grid" id="posGrid"></div>
+          <div class="summary-strip" id="alokasiSummary"></div>
+          <div class="formula-box">
+            50% Kebutuhan · 30% Keinginan · 20% Tabungan &amp; Darurat
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         LAYAR 6: FITUR WISHLIST TRACKER
+         ============================================================ -->
+    <section class="screen" id="screen-wishlist">
+      <!-- Header + navigasi (Home/Game/Pengaturan) diisi otomatis oleh JS: lihat fungsi headerHTML() -->
+      <header class="app-header" data-header></header>
+      <div class="app-main">
+        <button class="back-link" data-nav="menu">← Kembali ke Home</button>
+        <div class="feature-head">
+          <div
+            class="icon-badge"
+            style="background: var(--accent-soft); color: var(--accent)"
+          >
+            📝
+          </div>
+          <h2>Wishlist Tracker</h2>
+        </div>
+        <p class="feature-sub">
+          Ketik wishlist mu, isi harga target, dan tentukan tabungan harian.
+        </p>
+
+        <div class="panel">
+          <div class="field-row">
+            <div class="field">
+              <label for="wishName">Wishlist</label>
+              <input type="text" id="wishName" placeholder="cth. Sepatu lari" />
+            </div>
+            <div class="field">
+              <label for="wishPrice">Harga(Rp)</label>
+              <input
+                type="number"
+                id="wishPrice"
+                placeholder="cth. 1200000"
+                min="0"
+              />
+            </div>
+            <div class="field">
+              <label for="wishDaily">Nabung / Hari (Rp)</label>
+              <input
+                type="number"
+                id="wishDaily"
+                placeholder="cth. 20000"
+                min="0"
+              />
+            </div>
+            <button class="btn btn-primary" id="addWishBtn">Tambah</button>
+          </div>
+          <div class="formula-box">
+            <span>Durasi</span> =
+            <span class="frac"
+              ><span>Harga Wishlist</span><span class="line"></span
+              ><span>Nabung Harian</span></span
+            >
+          </div>
+          <div class="wish-list" id="wishList"></div>
+          <div class="empty-state" id="wishEmpty">
+            Belum ada wishlist. Tambahkan impianmu dan Spendlesss_ akan
+            menghitung estimasi harinya. ✨
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         LAYAR 7: FITUR CATATAN KAS
+         ============================================================ -->
+    <section class="screen" id="screen-catatan">
+      <!-- Header + navigasi (Home/Game/Pengaturan) diisi otomatis oleh JS: lihat fungsi headerHTML() -->
+      <header class="app-header" data-header></header>
+      <div class="app-main">
+        <button class="back-link" data-nav="menu">← Kembali ke Home</button>
+        <div class="feature-head">
+          <div
+            class="icon-badge"
+            style="background: var(--accent-soft); color: var(--accent)"
+          >
+            ✅
+          </div>
+          <h2>Catatan pengeluaran</h2>
+        </div>
+        <p class="feature-sub">
+          Ketik nama item dan nominal pengeluaran, kemudian pilih pos mana yang
+          akan terpotong. 
+           <p class="feature-sub">contoh: nama item = kopi pagi, nominal = 35000, potongan
+          dari pos = tabungan
+        </p>
+        </p>
+
+        <div class="panel">
+          <div class="field-row">
+            <div class="field">
+              <label for="cashItem">Nama Item</label>
+              <input type="text" id="cashItem" placeholder="cth. Kopi pagi" />
+            </div>
+            <div class="field">
+              <label for="cashAmount">Nominal (Rp)</label>
+              <input
+                type="number"
+                id="cashAmount"
+                placeholder="cth. 25000"
+                min="0"
+              />
+            </div>
+            <div class="field">
+              <label for="cashPos">Potong dari Pos</label>
+              <select id="cashPos"></select>
+            </div>
+            <button class="btn btn-primary" id="addCashBtn">Catat</button>
+          </div>
+          <div class="summary-strip" id="cashSummary"></div>
+          <div class="cash-list" id="cashList"></div>
+          <div class="empty-state" id="cashEmpty">
+            Belum ada pengeluaran tercatat. Ketik item dan nominalnya untuk
+            mulai merekap kas harianmu.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         LAYAR 8: FITUR GAME LAWAN SINDIRAN
+         ============================================================ -->
+    <section class="screen" id="screen-game">
+      <!-- Header + navigasi (Home/Game/Pengaturan) diisi otomatis oleh JS: lihat fungsi headerHTML() -->
+      <header class="app-header" data-header></header>
+      <div class="app-main">
+        <button class="back-link" data-nav="menu">← Kembali ke Home</button>
+        <div class="feature-head">
+          <div
+            class="icon-badge"
+            style="background: var(--accent-soft); color: var(--accent)"
+          >
+            🎮
+          </div>
+          <h2>Mini Games</h2>
+        </div>
+        <p class="feature-sub">
+          10 pertanyaan doom-spending per level. Pilih jawaban yang paling tepat.
+        </p>
+
+        <!-- Pilih Level -->
+        <div id="gameLevelSelect">
+          <div class="level-grid">
+            <button class="level-card" data-level="easy">
+              <span class="level-tag easy">EASY</span>
+              <h3>Santai Dulu</h3>
+              <p>
+                Pertanyaan ringan, bahasa Indonesia biasa. Cocok buat pemanasan.
+              </p>
+              <span class="level-stat" id="statEasy"></span>
+            </button>
+            <button class="level-card" data-level="medium">
+              <span class="level-tag medium">MEDIUM</span>
+              <h3>Think Before You Checkout</h3>
+              <p>Skenario belanja sehari-hari yang menguji kepekaanmu terhadap godaan diskon dan FOMO.</p>
+              <span class="level-stat" id="statMedium"></span>
+            </button>
+            <button class="level-card" data-level="hard">
+              <span class="level-tag hard">HARD</span>
+              <h3>Kenali Doom Spending</h3>
+              <p>Skenario finansial yang lebih kompleks untuk menguji kematangan pengelolaan uangmu.</p>
+              <span class="level-stat" id="statHard"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sesi Kuis Berjalan -->
+        <div id="gameQuizView" style="display: none">
+          <div class="panel">
+            <div class="game-progress-row">
+              <span class="level-tag" id="gameLevelBadge"></span>
+              <span class="game-progress-text" id="gameProgressText"
+                >Soal 1/10</span
+              >
+            </div>
+            <div class="game-stats" id="gameStats"></div>
+            <div class="game-prompt">
+              <span class="gp-badge">Mini Game</span>
+              <p id="gamePromptText">Memuat Game…</p>
+            </div>
+            <div class="game-question">Kamu harus jawab apa?</div>
+            <div class="game-options" id="gameOptions"></div>
+            <div class="game-feedback" id="gameFeedback"></div>
+            <div class="game-next-wrap" id="gameNextWrap">
+              <button class="btn btn-primary btn-auto" id="gameNextBtn">
+                Berikutnya 
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hasil Akhir Level (10 soal selesai) -->
+        <div id="gameResultView" style="display: none">
+          <div class="panel game-result-panel">
+            <div class="game-result-emoji" id="resultEmoji">🎯</div>
+            <h3 id="resultTitle">Level selesai!</h3>
+            <p id="resultMessage"></p>
+            <div class="summary-strip" id="resultStats"></div>
+            <div class="profil-actions">
+              <button class="btn btn-primary" id="playAgainBtn">
+                Ulangi
+              </button>
+              <button class="btn btn-ghost" id="backLevelBtn">
+                Level Lain
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      (function () {
+        "use strict";
+
+        /* ====================================================================
+           DAFTAR ISI JS (urutan mengikuti alur layar, sama seperti CSS & HTML)
+           A. Util & konstanta dasar
+           B. Penyimpanan data (storage)
+           C. State simulasi (profile/finance/game) & default value
+           D. Navigasi & komponen bersama (goTo, header, tema)
+           E. Layar: Mulai Simulasi (welcome)
+           F. Layar: Menu Utama / Home (termasuk slider kata sindiran)
+           G. Layar: Pengaturan
+           H. Layar: Alokasi Gaji
+           I. Layar: Wishlist Tracker
+           J. Layar: Catatan Kas
+           K. Layar: Game "Lawan Sindiran"
+           L. Boot aplikasi
+           ==================================================================== */
+
+        // ------------------------------------------------------------------
+        // A. UTIL & KONSTANTA DASAR
+        // ------------------------------------------------------------------
+        const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+        const $$ = (sel, ctx) => (ctx || document).querySelectorAll(sel);
+        const fmt = (n) => "Rp " + Math.round(n || 0).toLocaleString("id-ID");
+        const escapeHtml = (str) => {
+          const d = document.createElement("div");
+          d.textContent = str;
+          return d.innerHTML;
+        };
+        const DAY = 24 * 60 * 60 * 1000;
+
+        function debounce(fn, ms) {
+          let t;
+          return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...args), ms);
+          };
+        }
+
+        // ------------------------------------------------------------------
+        // B. PENYIMPANAN DATA (supaya tidak hilang saat file ditutup/refresh)
+        // ------------------------------------------------------------------
+        async function sGet(key, fallback) {
+          try {
+            const r = await window.storage.get(key, false);
+            return r ? JSON.parse(r.value) : fallback;
+          } catch (e) {
+            return fallback;
+          }
+        }
+        async function sSet(key, value) {
+          try {
+            await window.storage.set(key, JSON.stringify(value), false);
+            return true;
+          } catch (e) {
+            console.error("Gagal menyimpan data:", e);
+            return false;
+          }
+        }
+
+        // ------------------------------------------------------------------
+        // C. STATE SIMULASI (profile/finance/game) & DEFAULT VALUE
+        // Tidak ada akun/login — semua tersimpan lokal di perangkat ini.
+        // ------------------------------------------------------------------
+        let profile = null; // { username, usernameSet, mode, accent, nickChanges }
+        let finance = null; // { gaji, pos, wishlists, cash }
+        let game = null; // { levels: { easy/medium/hard: { plays, bestCorrect } } }
+
+        const MAX_NICK_CHANGES = 2;
+
+        function defaultFinance() {
+          return {
+            gaji: 0,
+            pos: [
+              {
+                key: "kebutuhan",
+                label: "Kebutuhan",
+                color: "var(--accent)",
+                amount: 0,
+              },
+              {
+                key: "tabungan",
+                label: "Tabungan",
+                color: "var(--accent)",
+                amount: 0,
+              },
+              {
+                key: "darurat",
+                label: "Dana Darurat",
+                color: "var(--accent)",
+                amount: 0,
+              },
+              {
+                key: "Nongkrong",
+                label: "Nongkrong",
+                color: "var(--accent)",
+                amount: 0,
+              },
+              {
+                key: "wishlist",
+                label: "Wishlist",
+                color: "var(--accent)",
+                amount: 0,
+              },
+            ],
+            wishlists: [],
+            cash: [],
+          };
+        }
+        function defaultProfile(name) {
+          return {
+            username: name || "",
+            usernameSet: !!name,
+            mode: "light",
+            accent: "hijau",
+            nickChanges: 0,
+          };
+        }
+        function defaultGame() {
+          return {
+            levels: {
+              easy: { plays: 0, bestCorrect: 0 },
+              medium: { plays: 0, bestCorrect: 0 },
+              hard: { plays: 0, bestCorrect: 0 },
+            },
+          };
+        }
+
+        const PROFILE_KEY = "profile";
+        const FINANCE_KEY = "finance";
+        const GAME_KEY = "game";
+
+        const saveFinance = debounce(async () => {
+          await sSet(FINANCE_KEY, finance);
+        }, 500);
+        async function saveProfile() {
+          await sSet(PROFILE_KEY, profile);
+        }
+        const saveGame = debounce(async () => {
+          await sSet(GAME_KEY, game);
+        }, 400);
+
+        // ------------------------------------------------------------------
+        // D. NAVIGASI & KOMPONEN BERSAMA (goTo, header/nav, tema)
+        // Dipakai di semua layar setelah welcome.
+        // ------------------------------------------------------------------
+        function goTo(name) {
+          $$(".screen").forEach((s) => s.classList.remove("active"));
+          $("#screen-" + name).classList.add("active");
+          window.scrollTo(0, 0);
+          if (
+            [
+              "menu",
+              "game",
+              "pengaturan",
+              "alokasi",
+              "wishlist",
+              "catatan",
+            ].includes(name)
+          ) {
+            renderAllHeaders();
+          }
+          stopQuoteRotation();
+          if (name === "menu") {
+            renderQuote();
+            startQuoteRotation();
+            updateMenuGreeting();
+          }
+          if (name === "pengaturan") renderSettingsScreen();
+          if (name === "alokasi") {
+            renderPos();
+            renderAlokasiSummary();
+          }
+          if (name === "wishlist") {
+            renderWish();
+          }
+          if (name === "catatan") {
+            renderCash();
+          }
+          if (name === "game") {
+            showGameLevelSelect();
+          }
+        }
+        $$("[data-go]").forEach((el) => {
+          if (!el.closest("[data-header]"))
+            el.addEventListener("click", () => goTo(el.dataset.go));
+        });
+        $$(".back-link[data-nav]").forEach((el) => {
+          el.addEventListener("click", () => goTo(el.dataset.nav));
+        });
+
+        function setMode(m) {
+          document.body.setAttribute("data-mode", m);
+        }
+        function setAccent(a) {
+          document.body.setAttribute("data-accent", a);
+        }
+        function applyProfileTheme() {
+          setMode(profile.mode || "light");
+          setAccent(profile.accent || "hijau");
+        }
+
+        function initials(name) {
+          return (
+            (name || "?")
+              .split(" ")
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((w) => w[0].toUpperCase())
+              .join("") || "?"
+          );
+        }
+        function avatarInnerHtml() {
+          return initials(profile ? profile.username : "?");
+        }
+        function headerHTML(active) {
+          const label = {
+            menu: "Home",
+            game: "Game",
+            pengaturan: "Pengaturan",
+          };
+          const items = ["menu", "game", "pengaturan"]
+            .map(
+              (k) =>
+                `<button class="nav-link ${active === k ? "active" : ""}" data-nav="${k}">${label[k]}</button>`,
+            )
+            .join("");
+          return `
+            <div class="app-header-inner">
+              <div class="logo"><span class="mark"><img src="doom1.png" alt="Logo Spendlesss_" class="logo-img logo-img-light" /><img src="doom2.png" alt="Logo Spendlesss_" class="logo-img logo-img-dark" /></span> Spendlesss_</div>
+              <nav class="nav-links">${items}</nav>
+              <div class="header-right">
+                <div class="user-chip">
+                  <span class="avatar">${avatarInnerHtml()}</span>
+                  <span>${escapeHtml(profile && profile.username ? profile.username : "Sahabat Spendlesss_")}</span>
+                </div>
+                <button class="logout-btn" data-restart>Ulang Simulasi</button>
+              </div>
+            </div>`;
+        }
+        function renderAllHeaders() {
+          $$("[data-header]").forEach((h) => {
+            const active = h.closest(".screen").id.replace("screen-", "");
+            h.innerHTML = headerHTML(active);
+            h.querySelectorAll("[data-nav]").forEach((b) =>
+              b.addEventListener("click", () => goTo(b.dataset.nav)),
+            );
+            h.querySelector("[data-restart]").addEventListener(
+              "click",
+              backToWelcome,
+            );
+          });
+        }
+
+        // ------------------------------------------------------------------
+        // E. LAYAR: MULAI SIMULASI (welcome / pengganti login)
+        // ------------------------------------------------------------------
+        async function checkExistingData() {
+          const existing = await sGet(PROFILE_KEY, null);
+          $("#continueWrap").style.display = existing ? "block" : "none";
+          return existing;
+        }
+        $("#startBtn").addEventListener("click", async () => {
+          const name = $("#wcName").value.trim();
+          profile = defaultProfile(name);
+          finance = defaultFinance();
+          game = defaultGame();
+          await saveProfile();
+          await sSet(FINANCE_KEY, finance);
+          await sSet(GAME_KEY, game);
+          applyProfileTheme();
+          goTo("menu");
+        });
+        $("#continueBtn").addEventListener("click", async () => {
+          await loadSimulationData();
+          goTo("menu");
+        });
+
+        async function loadSimulationData() {
+          profile = await sGet(PROFILE_KEY, defaultProfile(""));
+          if (typeof profile.nickChanges !== "number") profile.nickChanges = 0;
+          finance = await sGet(FINANCE_KEY, defaultFinance());
+          game = await sGet(GAME_KEY, defaultGame());
+          applyProfileTheme();
+        }
+
+        function backToWelcome() {
+          $("#wcName").value = "";
+          goTo("welcome");
+          checkExistingData();
+        }
+
+        // ------------------------------------------------------------------
+        // F. LAYAR: MENU UTAMA / HOME (sapaan + kotak sindiran + kartu fitur)
+        // Tambah/edit kalimat sindiran di array QUOTES_SINDIRAN di bawah ini.
+        // Kalimat berganti otomatis tiap 10 detik (lihat startQuoteRotation).
+        // ------------------------------------------------------------------
+        const QUOTES_SINDIRAN = [
+          "Hidup seadanya aja, gausah di ada adain, kaya banyak uang aja.",
+          "Stop ngalihin stres dengan belanja, karena setelah stres hilang, kau miskin.",
+          "ada ya orang karena stres trus belanja berkedok self reward.",
+          "stres mulu, lemah banget kaya rupiah.",
+          "Gaji imut, Pengeluaran Maut.",
+          "Percuma diberi uang banyak kalau mentalnya dan finansialnya ga bagus.",
+          "hutang sana sini cuman buat puasin emosi? dasar gen z.",
+          "in this ekonomi ga cocok stres nongkrong, bikin miskin .",
+        ];
+
+        let quoteRotateTimer = null;
+        let lastQuoteIndex = -1;
+
+        // Ambil satu kalimat sindiran acak (dihindari sama persis dengan yang sebelumnya)
+        function pickQuote() {
+          if (QUOTES_SINDIRAN.length <= 1) return QUOTES_SINDIRAN[0];
+          let i;
+          do {
+            i = Math.floor(Math.random() * QUOTES_SINDIRAN.length);
+          } while (i === lastQuoteIndex);
+          lastQuoteIndex = i;
+          return QUOTES_SINDIRAN[i];
+        }
+
+        // Tampilkan satu kalimat sindiran di kotak Home (tanpa animasi, dipakai saat pertama masuk)
+        function renderQuote() {
+          const el = $("#sindiranText");
+          if (!el) return;
+          el.textContent = pickQuote();
+        }
+
+        // Ganti kalimat dengan efek fade halus (dipakai tiap auto-rotate)
+        function rotateQuote() {
+          const el = $("#sindiranText");
+          if (!el) return;
+          el.classList.add("fade");
+          setTimeout(() => {
+            el.textContent = pickQuote();
+            el.classList.remove("fade");
+          }, 220);
+        }
+
+        // Auto-ganti kalimat tiap 10 detik
+        function startQuoteRotation() {
+          stopQuoteRotation();
+          quoteRotateTimer = setInterval(rotateQuote, 10000);
+        }
+        function stopQuoteRotation() {
+          if (quoteRotateTimer) {
+            clearInterval(quoteRotateTimer);
+            quoteRotateTimer = null;
+          }
+        }
+
+        function updateMenuGreeting() {
+          $("#menuGreet").textContent =
+            `Halo, ${profile && profile.username ? profile.username : "Sahabat Spendless!!"}`;
+        }
+
+        // ------------------------------------------------------------------
+        // G. LAYAR: PENGATURAN (tombol pilih tema + nama panggilan)
+        // ------------------------------------------------------------------
+        function renderSettingsScreen() {
+          // Grid MODE TAMPILAN (terang/gelap)
+          const modeGrid = $("#modeGrid");
+          const modes = [
+            { m: "light", label: "Terang" },
+            { m: "dark", label: "Gelap" },
+          ];
+          modeGrid.innerHTML = modes
+            .map(
+              (mo) => `
+            <button class="theme-choice ${profile.mode === mo.m ? "active" : ""}" data-m="${mo.m}">
+              <span class="theme-swatch" data-mode-swatch="${mo.m}"></span>
+              <span>${mo.label}</span>
+            </button>`,
+            )
+            .join("");
+          modeGrid.querySelectorAll(".theme-choice").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              profile.mode = btn.dataset.m;
+              setMode(profile.mode);
+              await saveProfile();
+              renderSettingsScreen();
+            });
+          });
+
+          // Grid WARNA AKSEN (hijau default, pink, ungu, biru)
+          const accentGrid = $("#accentGrid");
+          const accents = [
+            { a: "hijau", label: "Hijau" },
+            { a: "pink", label: "Pink" },
+            { a: "ungu", label: "Ungu" },
+            { a: "biru", label: "Biru" },
+          ];
+          accentGrid.innerHTML = accents
+            .map(
+              (ac) => `
+            <button class="theme-choice ${profile.accent === ac.a ? "active" : ""}" data-a="${ac.a}">
+              <span class="theme-swatch" data-accent-swatch="${ac.a}"></span>
+              <span>${ac.label}</span>
+            </button>`,
+            )
+            .join("");
+          accentGrid.querySelectorAll(".theme-choice").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              profile.accent = btn.dataset.a;
+              setAccent(profile.accent);
+              await saveProfile();
+              renderSettingsScreen();
+            });
+          });
+
+          $("#nameOk").classList.remove("show");
+          $("#nickInput").value = "";
+
+          const remaining = MAX_NICK_CHANGES - (profile.nickChanges || 0);
+          const info = $("#nameInfo");
+          if (remaining <= 0) {
+            info.textContent =
+              "Kesempatan mengganti nama panggilan sudah habis.";
+            info.classList.add("show");
+            $("#nickInput").disabled = true;
+            $("#saveNickBtn").disabled = true;
+          } else {
+            info.textContent = `Sisa kesempatan mengganti nama: ${remaining}x.`;
+            info.classList.add("show");
+            $("#nickInput").disabled = false;
+            $("#saveNickBtn").disabled = false;
+          }
+        }
+
+        $("#saveNickBtn").addEventListener("click", async () => {
+          if ((profile.nickChanges || 0) >= MAX_NICK_CHANGES) return;
+          const val = $("#nickInput").value.trim();
+          if (!val) return;
+          profile.username = val;
+          profile.usernameSet = true;
+          profile.nickChanges = (profile.nickChanges || 0) + 1;
+          await saveProfile();
+          renderAllHeaders();
+
+          const ok = $("#nameOk");
+          const remaining = MAX_NICK_CHANGES - profile.nickChanges;
+          ok.textContent =
+            remaining > 0
+              ? `Nama panggilan disimpan. Nama sudah diganti ${profile.nickChanges}x, sisa ${remaining}x kesempatan lagi.`
+              : "Nama panggilan disimpan. Kesempatan mengganti nama sudah habis.";
+          ok.classList.add("show");
+
+          renderSettingsScreen();
+          $("#nameOk").classList.add("show");
+          $("#nameOk").textContent = ok.textContent;
+        });
+
+        // ------------------------------------------------------------------
+        // H. LAYAR: ALOKASI GAJI
+        // ------------------------------------------------------------------
+        const posGrid = $("#posGrid");
+        function renderPos() {
+          $("#gajiInput").value = finance.gaji || "";
+          posGrid.innerHTML = "";
+          finance.pos.forEach((p) => {
+            const pct =
+              finance.gaji > 0
+                ? Math.round((p.amount / finance.gaji) * 100)
+                : 0;
+            const el = document.createElement("div");
+            el.className = "pos-card";
+            el.innerHTML = `
+              <div class="pos-head"><span class="pos-name">${p.label}</span><span class="pos-pct">${pct}%</span></div>
+              <input type="number" min="0" value="${p.amount || ""}" data-key="${p.key}" placeholder="0">
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.min(pct, 100)}%; background:var(--accent);"></div></div>`;
+            posGrid.appendChild(el);
+          });
+          posGrid.querySelectorAll("input").forEach((inp) => {
+            inp.addEventListener("input", () => {
+              const pos = finance.pos.find((p) => p.key === inp.dataset.key);
+              pos.amount = parseFloat(inp.value) || 0;
+              renderPos();
+              renderAlokasiSummary();
+              renderCash();
+              saveFinance();
+            });
+          });
+        }
+        function renderAlokasiSummary() {
+          const totalAlloc = finance.pos.reduce((s, p) => s + p.amount, 0);
+          const sisa = finance.gaji - totalAlloc;
+          $("#alokasiSummary").innerHTML = `
+            <div class="summary-item"><div class="num">${fmt(finance.gaji)}</div><div class="lbl">Gaji Bulanan</div></div>
+            <div class="summary-item"><div class="num">${fmt(totalAlloc)}</div><div class="lbl">Total Teralokasi</div></div>
+            <div class="summary-item ${sisa < 0 ? "warn" : "ok"}"><div class="num">${fmt(sisa)}</div><div class="lbl">${sisa < 0 ? "Kelebihan Alokasi" : "Sisa Belum Dialokasikan"}</div></div>`;
+        }
+        $("#gajiInput").addEventListener("input", (e) => {
+          finance.gaji = parseFloat(e.target.value) || 0;
+          renderPos();
+          renderAlokasiSummary();
+          saveFinance();
+        });
+        $("#simulasiBtn").addEventListener("click", () => {
+          if (!finance.gaji) {
+            $("#gajiInput").focus();
+            return;
+          }
+          const kebutuhan = finance.gaji * 0.5,
+            keinginan = finance.gaji * 0.3,
+            tabungan = finance.gaji * 0.2;
+          finance.pos.find((p) => p.key === "kebutuhan").amount = kebutuhan;
+          finance.pos.find((p) => p.key === "Nongkrong").amount =
+            keinginan * 0.5;
+          finance.pos.find((p) => p.key === "wishlist").amount =
+            keinginan * 0.5;
+          finance.pos.find((p) => p.key === "tabungan").amount = tabungan * 0.6;
+          finance.pos.find((p) => p.key === "darurat").amount = tabungan * 0.4;
+          renderPos();
+          renderAlokasiSummary();
+          renderCash();
+          saveFinance();
+        });
+
+        // ------------------------------------------------------------------
+        // I. LAYAR: WISHLIST TRACKER
+        // ------------------------------------------------------------------
+        function renderWish() {
+          const list = $("#wishList"),
+            empty = $("#wishEmpty");
+          list.innerHTML = "";
+          if (!finance.wishlists.length) {
+            empty.style.display = "block";
+          } else {
+            empty.style.display = "none";
+            finance.wishlists.forEach((w, i) => {
+              const days = w.daily > 0 ? Math.ceil(w.price / w.daily) : null;
+              const el = document.createElement("div");
+              el.className = "wish-card";
+              el.innerHTML = `
+                <div>
+                  <div class="wname">🎯 ${escapeHtml(w.name)}</div>
+                  <div class="wmeta">Target ${fmt(w.price)} · Nabung ${fmt(w.daily)}/hari</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div class="wish-duration"><div class="d-num">${days !== null ? days : "∞"}</div><div class="d-lbl">HARI</div></div>
+                  <button class="icon-btn" data-i="${i}" aria-label="Hapus wishlist">✕</button>
+                </div>`;
+              list.appendChild(el);
+            });
+            list.querySelectorAll(".icon-btn").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                finance.wishlists.splice(parseInt(btn.dataset.i), 1);
+                renderWish();
+                saveFinance();
+              });
+            });
+          }
+        }
+        $("#addWishBtn").addEventListener("click", () => {
+          const name = $("#wishName").value.trim();
+          const price = parseFloat($("#wishPrice").value) || 0;
+          const daily = parseFloat($("#wishDaily").value) || 0;
+          if (!name || !price) return;
+          finance.wishlists.push({ name, price, daily });
+          $("#wishName").value = "";
+          $("#wishPrice").value = "";
+          $("#wishDaily").value = "";
+          renderWish();
+          saveFinance();
+        });
+
+        // ------------------------------------------------------------------
+        // J. LAYAR: CATATAN KAS (termasuk update sisa anggaran tiap pos)
+        // ------------------------------------------------------------------
+        function remainingFor(key) {
+          const pos = finance.pos.find((p) => p.key === key);
+          const spent = finance.cash
+            .filter((c) => c.pos === key)
+            .reduce((s, c) => s + c.amount, 0);
+          return (pos ? pos.amount : 0) - spent;
+        }
+        function renderCashPosOptions() {
+          const sel = $("#cashPos");
+          const current = sel.value;
+          sel.innerHTML = finance.pos
+            .map(
+              (p) =>
+                `<option value="${p.key}">${p.label} (${fmt(remainingFor(p.key))} sisa)</option>`,
+            )
+            .join("");
+          if (current) sel.value = current;
+        }
+        function renderCashSummary() {
+          const total = finance.cash.reduce((s, c) => s + c.amount, 0);
+          $("#cashSummary").innerHTML = `
+            <div class="summary-item"><div class="num">${fmt(total)}</div><div class="lbl">Total Pengeluaran</div></div>
+            <div class="summary-item"><div class="num">${finance.cash.length}</div><div class="lbl">Transaksi Tercatat</div></div>`;
+        }
+        function renderCash() {
+          renderCashPosOptions();
+          renderCashSummary();
+          const list = $("#cashList"),
+            empty = $("#cashEmpty");
+          list.innerHTML = "";
+          if (!finance.cash.length) {
+            empty.style.display = "block";
+          } else {
+            empty.style.display = "none";
+            [...finance.cash].reverse().forEach((c, ri) => {
+              const i = finance.cash.length - 1 - ri;
+              const posLabel =
+                (finance.pos.find((p) => p.key === c.pos) || {}).label ||
+                "Umum";
+              const el = document.createElement("div");
+              el.className = "cash-row";
+              el.innerHTML = `
+                <div><div class="ci-name">${escapeHtml(c.item)}</div><div class="ci-meta">dari pos ${posLabel} · ${c.time}</div></div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div class="ci-amt">- ${fmt(c.amount)}</div>
+                  <button class="icon-btn" data-i="${i}" aria-label="Hapus catatan">✕</button>
+                </div>`;
+              list.appendChild(el);
+            });
+            list.querySelectorAll(".icon-btn").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                finance.cash.splice(parseInt(btn.dataset.i), 1);
+                renderCash();
+                saveFinance();
+              });
+            });
+          }
+        }
+        $("#addCashBtn").addEventListener("click", () => {
+          const item = $("#cashItem").value.trim();
+          const amount = parseFloat($("#cashAmount").value) || 0;
+          const pos = $("#cashPos").value;
+          if (!item || !amount) return;
+          const time = new Date().toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          finance.cash.push({ item, amount, pos, time });
+          $("#cashItem").value = "";
+          $("#cashAmount").value = "";
+          renderCash();
+          saveFinance();
+        });
+
+        // ------------------------------------------------------------------
+        // K. LAYAR: GAME "LAWAN SINDIRAN" — 3 LEVEL x 10 SOAL
+        // Semua level memakai struktur soal yang sama: field "pertanyaan"
+        // untuk teks soal, "options" untuk 3 pilihan jawaban (properti
+        // "correct" menandai jawaban benar), serta "feedbackCorrect" dan
+        // "feedbackWrong" untuk pesan setelah dijawab. Urutan opsi di array
+        // TIDAK menentukan tampilan — fungsi shuffle() selalu mengacak ulang
+        // urutan opsi setiap soal dirender, jadi posisi jawaban benar selalu
+        // berubah-ubah dan tidak bisa ditebak dari kode ini.
+        // ------------------------------------------------------------------
+        const GAME_LEVELS = {
+          easy: [
+            {
+              pertanyaan: "Kamu melihat tas yang sudah lama diincar sedang diskon 50%. Apa keputusan yang paling bijak?",
+              options: [
+                { text: "A. Langsung checkout, mumpung murah.", correct: false },
+                { text: "B. Beli kalau uang di rekening masih cukup.", correct: false },
+                { text: "C. Cek dulu apakah tas itu memang dibutuhkan dan sudah masuk anggaran bulan ini.", correct: true },
+              ],
+              feedbackCorrect:
+                "Tepat sekali! Bertanya (Apakah aku benar-benar membutuhkan ini?) bisa menyelamatkanmu dari banyak pembelian impulsif.",
+              feedbackWrong:
+                "Sebelum melihat besarnya diskon, coba lihat dulu besarnya kebutuhanmu. Jangan sampai promo lebih kamu dengarkan daripada logikamu.",
+            },
+            {
+              pertanyaan: "Setelah seharian capek kuliah, kamu merasa ingin belanja supaya mood membaik. Apa yang sebaiknya dilakukan?",
+              options: [
+                { text: "A. Checkout satu barang kecil saja, biar nggak terlalu mahal.",correct: false,},
+                { text: "B. Istirahat dulu atau lakukan aktivitas lain sebelum memutuskan belanja.", correct: true },
+                { text: "C. Scroll marketplace dulu, siapa tahu nggak jadi beli.", correct: false },
+              ],
+              feedbackCorrect:
+                "Tepat! Mengelola emosi dengan cara yang lebih sehat adalah langkah terbaik. Bahagia yang sesungguhnya datang dari hati yang tenang, bukan dari keranjang belanja yang penuh.",
+              feedbackWrong:
+                "Belanja memang bisa membuat perasaan lebih baik untuk sesaat, tapi jangan sampai rasa lega itu berubah menjadi penyesalan saat melihat saldo rekening.",
+            },
+            {
+              pertanyaan: "Barang yang kamu inginkan sedang flash sale dan stoknya tinggal sedikit. Apa yang akan kamu lakukan?",
+              options: [
+                { text: "A. Langsung beli sebelum kehabisan.", correct: false,},
+                { text: "C. Tambahkan barang lain supaya gratis ongkir.", correct: false,},
+                { text: "C. Beli kalau memang sudah direncanakan sejak awal dan sesuai anggaran.", correct: true,},
+              ],
+              feedbackCorrect:
+                "Mantap! Promo memang menggoda, tapi keputusan yang bijak selalu didasarkan pada kebutuhan, bukan rasa panik karena takut kehabisan.",
+              feedbackWrong:
+                "Flash sale memang hanya sebentar, tapi tagihan dan pengeluaranmu bisa bertahan lebih lama. Jangan biarkan rasa panik mengambil keputusan.",
+            },
+            {
+              pertanyaan:"Temanmu baru membeli sepatu yang sedang viral. Kamu jadi ingin ikut beli supaya nggak ketinggalan tren. Hal tersebut dinamakan?",
+              options: [
+                { text: "A. FOMO yang bisa memicu doom spending", correct: true,},
+                { text: "B. Financial planning.", correct: false,},
+                { text: "C. Reward untuk diri sendiri.", correct: false,},
+              ],
+              feedbackCorrect:
+                "Benar! Mengenali FOMO adalah langkah awal agar kamu tidak mudah terbawa tren yang belum tentu sesuai kebutuhanmu.",
+              feedbackWrong:
+                "Mengikuti tren memang menyenangkan, tapi kondisi keuangan setiap orang berbeda. Jangan jadikan standar orang lain sebagai alasan untuk menghabiskan uangmu.",
+            },
+            {
+              pertanyaan: "Sebelum checkout, pertanyaan mana yang PALING penting?",
+              options: [
+                { text: "A. Berapa persen diskonnya?", correct: false},
+                { text: "B. Apa nanti bakal ada promo lagi?", correct: false,},
+                { text: "C. Apakah aku benar-benar membutuhkan barang ini?",correct: true,},
+              ],
+              feedbackCorrect:
+                "Tepat sekali! Bertanya (Apakah aku benar-benar membutuhkan ini?) bisa menyelamatkanmu dari banyak pembelian impulsif.",
+              feedbackWrong:
+                "Sebelum melihat besarnya diskon, coba lihat dulu besarnya kebutuhanmu. Jangan sampai promo lebih kamu dengarkan daripada logikamu.",
+            },
+            {
+              pertanyaan: "Mana contoh kebutuhan?",
+              options: [
+                {
+                  text: "A. Kuota internet untuk kuliah online.",
+                  correct: true,
+                },
+                {
+                  text: "B. Headset baru padahal yang lama masih bagus.",
+                  correct: false,
+                },
+                {
+                  text: "C. Skincare baru karena packaging-nya lucu.",
+                  correct: false,
+                },
+              ],
+              feedbackCorrect:
+                "Hebat! Kamu berhasil membedakan kebutuhan dengan keinginan. Keputusan kecil seperti ini sangat berpengaruh pada kesehatan finansialmu.",
+              feedbackWrong:
+                "Barang yang lucu belum tentu penting. Ingat, kebutuhan membantu hidupmu berjalan, sedangkan keinginan bisa menunggu.",
+            },
+            {
+              pertanyaan:
+                "Kalau kamu punya uang Rp500.000 dan ingin membeli barang Rp450.000 yang tidak mendesak, keputusan terbaik adalah?",
+              options: [
+                {
+                  text: "A. Beli saja, nanti uangnya bisa dicari lagi.",
+                  correct: false,
+                },
+                {
+                  text: "B. Tunggu sampai kebutuhan utama dan tabungan sudah terpenuhi.",
+                  correct: true,
+                },
+                {
+                  text: "C. Pakai PayLater supaya uang tetap utuh.",
+                  correct: false,
+                },
+              ],
+              feedbackCorrect:
+                "Mantap! Memiliki uang bukan berarti harus langsung menghabiskannya. Menunda pembelian juga merupakan bentuk pengelolaan keuangan yang baik.",
+              feedbackWrong:
+                "Saldo yang masih banyak bukan tanda bahwa semua barang harus dibeli. Masa depanmu juga butuh bagian dari uang itu.",
+            },
+            {
+              pertanyaan: "Mana kebiasaan yang paling membantu menghindari doom spending?",
+              options: [
+                {
+                  text: "A. Menyimpan kartu pembayaran di semua aplikasi.",
+                  correct: false,
+                },
+                {
+                  text: "B. Memberi jeda sebelum membeli dan membuat daftar kebutuhan. dulu di hari gajian, hitung nanti.",
+                  correct: true,
+                },
+                {
+                  text: "C. Mengaktifkan semua notifikasi promo.",
+                  correct: false,
+                },
+              ],
+              feedbackCorrect:
+                "Benar! Membuat daftar kebutuhan dan memberi jeda sebelum membeli bisa membantumu berpikir lebih rasional.",
+              feedbackWrong:
+                "Semakin mudah proses checkout, semakin mudah juga uang keluar. Coba beri sedikit (hambatan) agar keputusanmu lebih dipikirkan.",
+            },
+            {
+              pertanyaan: "Kamu berkata, Kan cuma Rp25.000. Pernyataan yang paling tepat adalah??",
+              options: [
+                {
+                  text: "A. Pengeluaran kecil yang sering dilakukan tetap bisa menguras keuangan.",
+                  correct: true,
+                },
+                {
+                  text: "B. Benar, nominal kecil pasti tidak berpengaruh.",
+                  correct: false,
+                },
+                {
+                  text: "C. Selama diskon, tidak masalah.",
+                  correct: false,
+                },
+              ],
+              feedbackCorrect:
+                "Tepat! Pengeluaran kecil memang terlihat sepele, tapi jika dilakukan terus-menerus bisa menjadi kebiasaan yang menguras keuangan.",
+              feedbackWrong:
+                "Cuma?Rp25.000 memang kecil. Tapi kalau diulang berkali-kali, jumlahnya bisa lebih besar dari yang kamu bayangkan.",
+            },
+            {
+              pertanyaan:
+                "Mana yang paling menunjukkan kebiasaan mengelola keuangan dengan baik?",
+              options: [
+                {
+                  text: "A. Membeli semua barang yang sedang diskon.",
+                  correct: false,
+                },
+                {
+                  text: "B. Menggunakan seluruh uang bulanan untuk self reward.",
+                  correct: false,
+                },
+                {
+                  text: "C. Menyisihkan tabungan terlebih dahulu, lalu berbelanja sesuai sisa anggaran.",
+                  correct: true,
+                },
+              ],
+              feedbackCorrect:
+                "Selamat! Kamu memahami bahwa menabung dan memenuhi kebutuhan terlebih dahulu adalah fondasi dari keuangan yang sehat.",
+              feedbackWrong:
+                "Self reward itu boleh, tapi jangan sampai semua uang habis untuk hadiah hari ini dan membuatmu kesulitan menghadapi hari esok.",
+            },
+          ],
+          medium: [
+            {
+              pertanyaan:
+                "Kamu sudah lama mengincar sebuah sepatu. Hari ini harganya turun 50%, tetapi uang yang kamu miliki juga harus digunakan untuk membayar kebutuhan kuliah minggu depan. Apa keputusan terbaik?",
+              options: [
+                { text: "Gunakan PayLater agar kebutuhan kuliah tetap aman.", correct: false },
+                { text: "Tunda pembelian dan utamakan kebutuhan yang lebih penting terlebih dahulu.", correct: true },
+                { text: "Langsung beli karena diskon sebesar ini jarang terjadi.", correct: false },
+              ],
+              feedbackCorrect:
+                "Hebat! Mendahulukan kebutuhan daripada keinginan menunjukkan kamu sudah mulai mengelola keuangan dengan bijak.",
+              feedbackWrong:
+                "Diskon memang menggoda, tapi jangan sampai mengorbankan kebutuhan yang lebih penting. Promo bisa datang lagi, kesempatan mengatur keuangan belum tentu.",
+            },
+            {
+              pertanyaan:
+                "Setelah melihat teman-temanmu mengunggah hasil belanja di media sosial, kamu jadi ingin membeli barang yang sama. Perasaan ini disebut...",
+              options: [
+                { text: "Mindful spending.", correct: false },
+                { text: "Self reward.", correct: false },
+                { text: "FOMO (Fear of Missing Out).", correct: true },
+              ],
+              feedbackCorrect:
+                "Tepat! FOMO sering membuat seseorang membeli sesuatu bukan karena butuh, tetapi karena takut merasa tertinggal.",
+              feedbackWrong:
+                "Belanja karena takut ketinggalan tren bukanlah keputusan yang bijak. Pastikan kebutuhanmu tidak ditentukan oleh media sosial.",
+            },
+            {
+              pertanyaan: "Mana yang paling mencerminkan mindful spending?",
+              options: [
+                { text: "Membeli sekarang karena takut besok harganya naik.", correct: false },
+                { text: "Membeli barang karena sedang viral.", correct: false },
+                { text: "Mempertimbangkan manfaat, kebutuhan, dan kondisi keuangan sebelum membeli.", correct: true },
+              ],
+              feedbackCorrect:
+                "Bagus! Mindful spending berarti membeli dengan sadar, bukan karena terburu-buru atau terbawa emosi.",
+              feedbackWrong:
+                "Keputusan yang baik bukan didasarkan pada rasa takut kehabisan, tetapi pada kebutuhan yang nyata.",
+            },
+            {
+              pertanyaan:
+                "Saat sedang stres, kamu sering membuka aplikasi belanja meskipun awalnya hanya ingin 'lihat-lihat'. Apa yang sebaiknya dilakukan?",
+              options: [
+                { text: "Masukkan dulu ke keranjang, nanti dipikirkan lagi.", correct: false },
+                { text: "Alihkan perhatian ke aktivitas lain yang bisa memperbaiki suasana hati.", correct: true },
+                { text: "Tetap lanjut melihat karena belum tentu membeli.", correct: false },
+              ],
+              feedbackCorrect:
+                "Hebat! Mengalihkan perhatian ke aktivitas positif dapat membantu mengurangi dorongan untuk belanja impulsif.",
+              feedbackWrong:
+                "Banyak checkout berawal dari niat 'cuma lihat-lihat'. Jangan beri kesempatan godaan mengambil alih keputusanmu.",
+            },
+            {
+              pertanyaan:
+                "Temanmu berkata, 'Pakai PayLater aja, cicilannya cuma Rp30.000 per bulan.' Apa tanggapan yang paling tepat?",
+              options: [
+                { text: "Tidak masalah selama barangnya sedang diskon.", correct: false },
+                { text: "Setuju, karena cicilannya kecil.", correct: false },
+                { text: "Gunakan hanya jika benar-benar diperlukan dan sudah diperhitungkan kemampuan membayarnya.", correct: true },
+              ],
+              feedbackCorrect:
+                "Tepat! PayLater bisa membantu jika digunakan dengan bijak, bukan untuk memenuhi keinginan sesaat.",
+              feedbackWrong:
+                "Cicilan yang terlihat kecil bisa berubah menjadi beban besar jika dilakukan berulang kali.",
+            },
+            {
+              pertanyaan:
+                "Apa langkah pertama yang paling efektif untuk mengurangi kebiasaan doom spending?",
+              options: [
+                { text: "Menghindari semua promo.", correct: false },
+                { text: "Mengenali emosi atau situasi yang memicu keinginan berbelanja.", correct: true },
+                { text: "Menghapus semua aplikasi belanja.", correct: false },
+              ],
+              feedbackCorrect:
+                "Benar! Saat kamu memahami pemicunya, kamu akan lebih mudah mengendalikan kebiasaan belanja impulsif.",
+              feedbackWrong:
+                "Menghapus aplikasi mungkin membantu sementara, tetapi yang paling penting adalah belajar mengendalikan diri.",
+            },
+            {
+              pertanyaan:
+                "Kamu menerima uang bulanan lebih banyak dari biasanya. Apa yang sebaiknya dilakukan terlebih dahulu?",
+              options: [
+                { text: "Menunggu promo tanggal kembar.", correct: false },
+                { text: "Membeli barang yang sudah lama diinginkan.", correct: false },
+                { text: "Menyisihkan sebagian untuk tabungan atau dana darurat sebelum berbelanja.", correct: true },
+              ],
+              feedbackCorrect:
+                "Mantap! Menabung di awal membuatmu lebih siap menghadapi kebutuhan tak terduga.",
+              feedbackWrong:
+                "Saat pemasukan bertambah, jangan biarkan gaya hidup ikut bertambah tanpa perencanaan.",
+            },
+            {
+              pertanyaan:
+                "Kamu membeli barang hanya karena tulisan 'Tersisa 2 stok!'. Strategi pemasaran ini memanfaatkan...",
+              options: [
+                { text: "Financial planning.", correct: false },
+                { text: "FOMO dan rasa takut kehilangan kesempatan.", correct: true },
+                { text: "Mindful spending.", correct: false },
+              ],
+              feedbackCorrect:
+                "Hebat! Banyak promo memanfaatkan rasa takut kehabisan agar kita membeli lebih cepat tanpa berpikir panjang.",
+              feedbackWrong:
+                "Jangan biarkan hitungan stok menentukan keputusanmu. Yang terpenting adalah apakah kamu benar-benar membutuhkannya.",
+            },
+            {
+              pertanyaan:
+                "Setelah checkout, kamu merasa sangat senang. Namun beberapa jam kemudian muncul rasa bersalah. Mengapa hal ini bisa terjadi?",
+              options: [
+                { text: "Karena seharusnya membeli lebih banyak.", correct: false },
+                { text: "Karena barang yang dibeli terlalu murah.", correct: false },
+                { text: "Karena kepuasan dari belanja biasanya hanya bersifat sementara.", correct: true },
+              ],
+              feedbackCorrect:
+                "Tepat! Belanja memang bisa memberi rasa senang sesaat, tetapi tidak selalu menyelesaikan masalah yang sebenarnya.",
+              feedbackWrong:
+                "Perasaan lega setelah belanja sering kali hanya sementara. Yang bertahan lebih lama justru keputusan finansial yang kita buat.",
+            },
+            {
+              pertanyaan: "Manakah pernyataan yang paling tepat mengenai doom spending?",
+              options: [
+                { text: "Doom spending sama dengan membeli barang saat diskon.", correct: false },
+                { text: "Doom spending adalah kebiasaan menghabiskan uang secara impulsif untuk meredakan emosi atau kecemasan.", correct: true },
+                { text: "Doom spending hanya terjadi pada orang yang memiliki banyak uang.", correct: false },
+              ],
+              feedbackCorrect:
+                "🎉 Selamat! Kamu sudah memahami bahwa doom spending bukan sekadar soal belanja, tetapi tentang alasan seseorang menghabiskan uang.",
+              feedbackWrong:
+                "Doom spending bukan ditentukan oleh jumlah uang atau besarnya diskon, melainkan kebiasaan menggunakan pengeluaran sebagai pelarian dari emosi. 💙",
+            },
+          ],
+          hard: [
+            {
+              pertanyaan:
+                "Kamu sedang merasa stres karena tugas kuliah menumpuk. Tiba-tiba muncul notifikasi 'Flash Sale 90% hanya 10 menit!'. Apa keputusan terbaik?",
+              options: [
+                { text: "Checkout dulu, kalau menyesal nanti bisa dijual lagi.", correct: false },
+                { text: "Simpan dulu barangnya di keranjang dan tunggu sampai emosimu lebih tenang sebelum memutuskan.", correct: true },
+                { text: "Langsung checkout karena promo sebesar itu jarang terjadi.", correct: false },
+              ],
+              feedbackCorrect:
+                "Hebat! Saat emosi sedang tidak stabil, memberi jeda sebelum membeli dapat membantu menghindari keputusan impulsif.",
+              feedbackWrong:
+                "Promo memang bisa datang tiba-tiba, tapi jangan biarkan emosi mengambil alih logikamu. Tidak semua diskon harus dimenangkan.",
+            },
+            {
+              pertanyaan:
+                "Manakah pernyataan yang paling menggambarkan seseorang mengalami doom spending?",
+              options: [
+                { text: "Menabung selama beberapa bulan sebelum membeli kamera impian.", correct: false },
+                { text: "Membeli baju baru setiap kali merasa sedih agar suasana hati membaik.", correct: true },
+                { text: "Membeli laptop baru karena laptop lama rusak dan memang dibutuhkan.", correct: false },
+              ],
+              feedbackCorrect:
+                "Tepat! Doom spending terjadi ketika pengeluaran dijadikan pelarian dari emosi, bukan berdasarkan kebutuhan.",
+              feedbackWrong:
+                "Perhatikan alasan di balik pengeluaran. Doom spending bukan soal barangnya, tetapi mengapa seseorang membelinya.",
+            },
+            {
+              pertanyaan:
+                "Kamu ingin membeli headphone baru karena sedang diskon. Headphone lama masih berfungsi dengan baik. Apa yang sebaiknya kamu lakukan?",
+              options: [
+                { text: "Beli sekarang agar tidak menyesal nanti.", correct: false },
+                { text: "Tetap beli karena lebih hemat saat diskon.", correct: false },
+                { text: "Tanyakan pada diri sendiri apakah kamu tetap akan membeli jika tidak ada diskon.", correct: true },
+              ],
+              feedbackCorrect:
+                "Bagus! Diskon tidak mengubah barang yang tidak dibutuhkan menjadi kebutuhan.",
+              feedbackWrong:
+                "Jangan sampai rasa takut kehilangan promo membuatmu kehilangan kendali atas pengeluaran.",
+            },
+            {
+              pertanyaan:
+                "Dalam seminggu terakhir kamu sering membeli kopi mahal, top up game, dan makanan karena bosan. Apa masalah utamanya?",
+              options: [
+                { text: "Penghasilanmu terlalu kecil.", correct: false },
+                { text: "Pengeluaran dilakukan berdasarkan dorongan sesaat, bukan prioritas.", correct: true },
+                { text: "Harga barang yang dibeli terlalu mahal.", correct: false },
+              ],
+              feedbackCorrect:
+                "Tepat! Doom spending lebih berkaitan dengan kebiasaan dan alasan di balik pengeluaran daripada jumlah uang yang dikeluarkan.",
+              feedbackWrong:
+                "Masalahnya bukan selalu pada harga atau penghasilan, tetapi pada pola pengeluaran yang tidak terkontrol.",
+            },
+            {
+              pertanyaan: "Mengapa doom spending dapat berdampak buruk dalam jangka panjang?",
+              options: [
+                { text: "Karena semua promo adalah jebakan.", correct: false },
+                { text: "Karena semua barang yang dibeli pasti tidak berguna.", correct: false },
+                { text: "Karena membuat seseorang sulit mencapai tujuan keuangan dan berisiko menumpuk utang.", correct: true },
+              ],
+              feedbackCorrect:
+                "Benar! Pengeluaran impulsif yang terus berulang dapat menghambat tabungan, dana darurat, bahkan impianmu di masa depan.",
+              feedbackWrong:
+                "Bukan barang atau promonya yang menjadi masalah, tetapi kebiasaan mengeluarkan uang tanpa perencanaan.",
+            },
+            {
+              pertanyaan:
+                "Teman-temanmu sudah memakai gadget terbaru, sedangkan gadget milikmu masih berfungsi dengan baik. Apa keputusan yang paling bijak?",
+              options: [
+                { text: "Gunakan PayLater agar tetap bisa mengikuti teman.", correct: false },
+                { text: "Tetap memakai gadget lama sampai benar-benar perlu diganti.", correct: true },
+                { text: "Upgrade sekarang supaya tidak ketinggalan tren.", correct: false },
+              ],
+              feedbackCorrect:
+                "Mantap! Mengikuti tren memang menyenangkan, tetapi kondisi keuanganmu lebih penting daripada gengsi sesaat.",
+              feedbackWrong:
+                "FOMO sering membuat kita membeli sesuatu yang sebenarnya belum dibutuhkan. Ingat, kebutuhanmu tidak ditentukan oleh media sosial.",
+            },
+            {
+              pertanyaan: "Mana yang paling mencerminkan seseorang memiliki financial awareness?",
+              options: [
+                { text: "Selalu mencari promo sebelum membeli apa pun.", correct: false },
+                { text: "Membeli semua barang saat tanggal kembar karena lebih murah.", correct: false },
+                { text: "Menyesuaikan pengeluaran dengan anggaran dan tujuan keuangan.", correct: true },
+              ],
+              feedbackCorrect:
+                "Hebat! Financial awareness berarti memahami kapan harus membeli dan kapan harus menahan diri.",
+              feedbackWrong:
+                "Promo memang menguntungkan, tetapi tanpa perencanaan, pengeluaran tetap bisa membengkak.",
+            },
+            {
+              pertanyaan:
+                "Seseorang berkata, 'Aku sering checkout barang murah, tapi kan cuma Rp20.000.' Pernyataan yang paling tepat adalah...",
+              options: [
+                { text: "Tidak termasuk doom spending karena bukan barang mahal.", correct: false },
+                { text: "Jika dilakukan terus-menerus, pengeluaran kecil tetap bisa menguras keuangan.", correct: true },
+                { text: "Tidak masalah karena nominalnya kecil.", correct: false },
+              ],
+              feedbackCorrect:
+                "Benar! Pengeluaran kecil yang berulang sering kali lebih berbahaya daripada satu pembelian besar yang direncanakan.",
+              feedbackWrong:
+                "Jangan remehkan nominal kecil. Sedikit demi sedikit, kebiasaan itulah yang bisa membuat dompetmu 'bocor'.",
+            },
+            {
+              pertanyaan:
+                "Kamu memiliki dana darurat Rp5.000.000. Tiba-tiba ada promo gadget impianmu. Apa keputusan terbaik?",
+              options: [
+                { text: "Gunakan PayLater supaya dana darurat tidak berkurang.", correct: false },
+                { text: "Gunakan dana darurat karena nanti bisa ditabung lagi.", correct: false },
+                { text: "Tetap simpan dana darurat dan beli hanya jika sudah memiliki anggaran khusus.", correct: true },
+              ],
+              feedbackCorrect:
+                "Tepat! Dana darurat disiapkan untuk keadaan mendesak, bukan untuk memenuhi keinginan sesaat.",
+              feedbackWrong:
+                "Dana darurat adalah pelindungmu saat keadaan tak terduga. Jangan sampai habis hanya karena godaan promo.",
+            },
+            {
+              pertanyaan:
+                "Manakah kebiasaan yang menunjukkan seseorang mulai berhasil keluar dari doom spending?",
+              options: [
+                { text: "Selalu membeli barang saat flash sale karena merasa lebih hemat.", correct: false },
+                { text: "Masih sering membuka marketplace, tetapi hanya membeli barang yang sudah direncanakan dan sesuai anggaran.", correct: true },
+                { text: "Menghapus semua aplikasi belanja, tetapi tetap sering membeli barang secara impulsif melalui media sosial.", correct: false },
+              ],
+              feedbackCorrect:
+                "🎉 Selamat! Keluar dari doom spending bukan berarti berhenti berbelanja, melainkan belajar mengendalikan emosi dan membuat keputusan yang lebih bijak.",
+              feedbackWrong:
+                "Perubahan bukan diukur dari seberapa sering kamu membuka aplikasi belanja, tetapi dari seberapa baik kamu mengendalikan keputusan sebelum menekan tombol checkout. 💙",
+            },
+          ],
+        };
+
+        const LEVEL_LABELS = { easy: "EASY", medium: "MEDIUM", hard: "HARD" };
+
+        // Pesan hasil akhir per level & per tier (sempurna/campur/parah)
+        const RESULT_CONTENT = {
+          sempurna: {
+            easy: {
+              emoji: "🌟",
+              title: "Sempurna! 10/10!",
+              message:
+                "Gila, keren banget! Semua jawaban kamu tepat. Kamu udah paham cara ngelawan godaan checkout, kecil maupun besar. Pertahankan kebiasaan cerdas ini, ya!",
+            },
+            medium: {
+              emoji: "🔥",
+              title: "Full Combo, 10/10!",
+              message:
+                "Anjay mantap! Kamu lolos dari semua jebakan promo dan FOMO. Vibes keuanganmu udah on point banget, keep it up!",
+            },
+            hard: {
+              emoji: "🏆",
+              title: "Mantap! 10/10!",
+              message:
+                "Keren banget! 10 dari 10 soal berhasil kamu jawab dengan tepat. Kamu udah nggak gampang terkecoh diskon atau FOMO lagi. Pertahankan kebiasaan ini!",
+            },
+          },
+          campur: {
+            easy: {
+              emoji: "🙂",
+              title: "Lumayan, Tapi Masih Bisa Lebih Baik",
+              message:
+                "Separuh jalan udah bagus, tapi separuhnya lagi masih kegoda pola belanja yang kurang sehat. Yuk pelan-pelan mulai keluar dari kebiasaan doom spending sebelum makin susah dihentikan.",
+            },
+            medium: {
+              emoji: "😅",
+              title: "Setengah-setengah Nih",
+              message:
+                "Kamu masih di antara 'sadar' dan 'kebawa vibes checkout'. Coba mulai kurangi kebiasaan yang bikin gampang FOMO belanja, biar progress nabungmu nggak ketinggalan terus.",
+            },
+            hard: {
+              emoji: "😬",
+              title: "Separuh Jalan",
+              message:
+                "Hasilnya setengah-setengah. Kamu masih separuh sadar, separuh lagi kebawa arus doom spending. Mulai lah pelan-pelan lepas dari kebiasaan checkout tanpa mikir itu, sebelum makin parah.",
+            },
+          },
+          parah: {
+            easy: {
+              emoji: "😔",
+              title: "Banyak yang Meleset...",
+              message:
+                "Kayaknya pola pikir belanjamu masih jauh dari sehat. Tapi ini bukan akhir — kalau diteruskan, nanti pas orang lain udah punya tabungan, kamu masih sendirian mikirin sisa gaji yang abis duluan. Bangkit, sadar, dan coba lagi ya. Kamu pasti bisa lebih baik!",
+            },
+            medium: {
+              emoji: "😵",
+              title: "Wah, Banyak yang Meleset",
+              message:
+                "Banyak banget yang meleset. Kalau kebiasaan checkout impulsif ini diterusin, ujung-ujungnya kamu bisa sendirian ngadepin dompet kosong sementara circle-mu udah pada punya tabungan. Nggak ada kata terlambat kok — bangun dari mindset ini, ulangi levelnya, dan buktikan kamu bisa lebih waras dari tadi!",
+            },
+            hard: {
+              emoji: "😭",
+              title: "Banyak Salahnya",
+              message:
+                "Cukup banyak yang meleset di level ini. Kalau kebiasaan checkout tanpa mikir ini diterusin, nanti pas teman-temanmu udah punya tabungan dan rencana masa depan, kamu masih sendirian mikirin cicilan sama PayLater yang nggak abis-abis. Tapi belum terlambat — bangun, sadar, jangan sampai nyesal di belakang hari. Ulangi levelnya, buktikan kamu bisa lebih baik dari ini!",
+            },
+          },
+        };
+
+        function shuffle(arr) {
+          const a = [...arr];
+          for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+          }
+          return a;
+        }
+
+        let currentLevelKey = null;
+        let roundQuestions = [];
+        let roundIndex = 0;
+        let roundCorrect = 0;
+        let currentOptions = [];
+
+        function levelStatText(levelKey) {
+          const st = game.levels[levelKey];
+          if (!st || !st.plays) return "Belum pernah dimainkan";
+          return `Dimainkan ${st.plays}x · Terbaik ${st.bestCorrect}/10`;
+        }
+
+        function showGameLevelSelect() {
+          $("#gameQuizView").style.display = "none";
+          $("#gameResultView").style.display = "none";
+          $("#gameLevelSelect").style.display = "block";
+          $("#statEasy").textContent = levelStatText("easy");
+          $("#statMedium").textContent = levelStatText("medium");
+          $("#statHard").textContent = levelStatText("hard");
+        }
+
+        $$(".level-card").forEach((btn) => {
+          btn.addEventListener("click", () => startLevel(btn.dataset.level));
+        });
+
+        function startLevel(levelKey) {
+          currentLevelKey = levelKey;
+          roundQuestions = shuffle(GAME_LEVELS[levelKey]);
+          roundIndex = 0;
+          roundCorrect = 0;
+          $("#gameLevelSelect").style.display = "none";
+          $("#gameResultView").style.display = "none";
+          $("#gameQuizView").style.display = "block";
+          renderRoundQuestion();
+        }
+
+        function renderRoundQuestion() {
+          const q = roundQuestions[roundIndex];
+          currentOptions = shuffle(q.options);
+
+          const badge = $("#gameLevelBadge");
+          badge.textContent = LEVEL_LABELS[currentLevelKey];
+          badge.className = "level-tag " + currentLevelKey;
+          $("#gameProgressText").textContent = `Soal ${roundIndex + 1}/10`;
+          $("#gameStats").innerHTML = `
+            <div class="game-stat"><div class="num">${roundCorrect}</div><div class="lbl">Benar Sejauh Ini</div></div>
+            <div class="game-stat"><div class="num">${roundIndex}</div><div class="lbl">Soal Terjawab</div></div>`;
+
+          $("#gamePromptText").textContent = q.pertanyaan;
+          $("#gameFeedback").classList.remove("show", "correct", "wrong");
+          $("#gameFeedback").textContent = "";
+          $("#gameNextWrap").classList.remove("show");
+
+          const optWrap = $("#gameOptions");
+          optWrap.innerHTML = "";
+          currentOptions.forEach((opt, i) => {
+            const btn = document.createElement("button");
+            btn.className = "game-option";
+            btn.dataset.i = i;
+            btn.textContent = opt.text;
+            optWrap.appendChild(btn);
+          });
+          optWrap.querySelectorAll(".game-option").forEach((btn) => {
+            btn.addEventListener("click", () =>
+              handleGameAnswer(parseInt(btn.dataset.i)),
+            );
+          });
+        }
+
+        function handleGameAnswer(i) {
+          const q = roundQuestions[roundIndex];
+          const chosen = currentOptions[i];
+          const buttons = $$(".game-option");
+          buttons.forEach((btn, bi) => {
+            btn.disabled = true;
+            if (currentOptions[bi].correct) btn.classList.add("correct");
+            else if (bi === i && !chosen.correct) btn.classList.add("wrong");
+          });
+
+          const feedback = $("#gameFeedback");
+          feedback.classList.add("show");
+          if (chosen.correct) {
+            roundCorrect += 1;
+            feedback.classList.add("correct");
+            feedback.textContent = "✅ " + q.feedbackCorrect;
+          } else {
+            feedback.classList.add("wrong");
+            feedback.textContent = "❌ " + q.feedbackWrong;
+          }
+          $("#gameStats").innerHTML = `
+            <div class="game-stat"><div class="num">${roundCorrect}</div><div class="lbl">Benar Sejauh Ini</div></div>
+            <div class="game-stat"><div class="num">${roundIndex + 1}</div><div class="lbl">Soal Terjawab</div></div>`;
+          $("#gameNextWrap").classList.add("show");
+          $("#gameNextBtn").textContent =
+            roundIndex < 9 ? "Soal Berikutnya →" : "Lihat Hasil →";
+        }
+
+        $("#gameNextBtn").addEventListener("click", () => {
+          roundIndex += 1;
+          if (roundIndex < 10) {
+            renderRoundQuestion();
+          } else {
+            showGameResults();
+          }
+        });
+
+        function tierFor(correct) {
+          if (correct === 10) return "sempurna";
+          if (correct >= 4) return "campur";
+          return "parah";
+        }
+
+        async function showGameResults() {
+          const tier = tierFor(roundCorrect);
+          const content = RESULT_CONTENT[tier][currentLevelKey];
+
+          const st = game.levels[currentLevelKey];
+          st.plays += 1;
+          st.bestCorrect = Math.max(st.bestCorrect, roundCorrect);
+          await sSet(GAME_KEY, game);
+
+          $("#gameQuizView").style.display = "none";
+          $("#gameResultView").style.display = "block";
+          $("#resultEmoji").textContent = content.emoji;
+          $("#resultTitle").textContent = content.title;
+          $("#resultMessage").textContent = content.message;
+          $("#resultStats").innerHTML = `
+            <div class="summary-item"><div class="num">${roundCorrect}/10</div><div class="lbl">Jawaban Benar</div></div>
+            <div class="summary-item"><div class="num">${LEVEL_LABELS[currentLevelKey]}</div><div class="lbl">Level</div></div>
+            <div class="summary-item"><div class="num">${st.bestCorrect}/10</div><div class="lbl">Rekor Terbaik</div></div>`;
+        }
+
+        $("#playAgainBtn").addEventListener("click", () =>
+          startLevel(currentLevelKey),
+        );
+        $("#backLevelBtn").addEventListener("click", showGameLevelSelect);
+
+        // ------------------------------------------------------------------
+        // L. BOOT APLIKASI (dijalankan saat file dibuka — simulasi lokal, tanpa login)
+        // ------------------------------------------------------------------
+        async function boot() {
+          const existing = await checkExistingData();
+          if (existing) {
+            await loadSimulationData();
+            goTo("menu");
+          } else {
+            goTo("welcome");
+          }
+        }
+        boot();
+      })();
+    </script>
+  </body>
+</html>
